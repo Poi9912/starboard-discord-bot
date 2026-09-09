@@ -1,7 +1,20 @@
 const Database = require('better-sqlite3');
 const path = require('path');
 
-const db = new Database(path.join(__dirname, '..', 'bot_data.db'));
+const dbFileName = 'bot_data.db';
+let dbFilePath=''
+
+
+
+if (process.env.ENV === 'PROD'){
+  dbFilePath = path.join(process.env.DB_PATH, dbFileName);
+  console.log(`The database for the bot is: ${dbFilePath}`)
+} else {
+  dbFilePath = path.join(__dirname, '..', process.env.DB_PATH, dbFileName);
+  console.log(`The database for the bot is: ${dbFilePath}`)
+}
+
+const db = new Database(dbFilePath);
 
 db.exec(`
   CREATE TABLE IF NOT EXISTS guild_configs (

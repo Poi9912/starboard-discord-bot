@@ -1,7 +1,7 @@
 {
   "name": "lazo-discord-bot",
   "version": "0.0.0",
-  "description": "Discord bot for highlights on your server based on reactions",
+  "description": "Discord bot for highlights on your server based on reactions, developed for LazaPlays private discord server",
   "keywords": [
     "discord",
     "reactions"
@@ -11,9 +11,16 @@
   "type": "commonjs",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "ENV=PROD node index.js",
+    "dev": "ENV=DEV nodemon index.js",
+    "test": "jest"
   },
   "dependencies": {
-    "discord.js": "^14.27.0"
+    "better-sqlite3": "^13.0.3",
+    "discord.js": "^14.27.0",
+    "dotenv": "^17.4.2",
+    "fs": "^0.0.1-security",
+    "jest": "^30.5.1",
+    "path": "^0.12.7"
   }
 }

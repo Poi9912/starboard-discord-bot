@@ -6,6 +6,6 @@ services:
     restart: unless-stopped
     environment:
       - DISCORD_TOKEN=${DISCORD_TOKEN}
-      - DB_PATH=/data
+      - DB_PATH=${DB_PATH}
     volumes:
-      - ${BOT_DATA_PATH}:/data
+      - ${BOT_DATA_PATH}:${DB_PATH}

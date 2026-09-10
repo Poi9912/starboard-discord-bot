@@ -1,0 +1,15 @@
+.git
+.gitignore
+.forgejo
+node_modules
+.env
+logs
+data
+*/*.test.*
+*/*.spec.*
+coverage
+README.md
+LICENSE
+jest.*.js
+Dockerfile*
+compose*.yaml

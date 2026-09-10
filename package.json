@@ -20,7 +20,10 @@
     "discord.js": "^14.27.0",
     "dotenv": "^17.4.2",
     "fs": "^0.0.1-security",
-    "jest": "^30.5.1",
     "path": "^0.12.7"
+  },
+  "devDependencies": {
+    "jest": "^30.5.1",
+    "jest-silent-reporter": "^0.6.0"
   }
 }

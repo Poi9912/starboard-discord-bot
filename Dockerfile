@@ -6,5 +6,4 @@ COPY package*.json ./
 RUN npm ci --omit=dev --no-fund --silent
 COPY --chown=node:node . .
 ENV DOTENV_DEBUG=false
-USER dcbot
 CMD ["npm", "run","start"]

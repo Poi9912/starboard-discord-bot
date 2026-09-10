@@ -1,6 +1,6 @@
 {
   "name": "lazo-discord-bot",
-  "version": "0.0.4",
+  "version": "0.0.5",
   "description": "Discord bot for highlights on your server based on reactions, developed for LazaPlays private discord server",
   "keywords": [
     "discord",

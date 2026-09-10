@@ -1,0 +1,22 @@
+name: tests
+on:
+  pull_request:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+      - 'LICENSE'
+      - 'compose*.yaml'
+  workflow_call:
+jobs:
+  test:
+    runs-on: docker
+    container:
+      image: node:lts-alpine
+    steps:
+      - uses: https://data.forgejo.org/actions/checkout@v4
+      - name: Install dependencies
+        run: npm ci --include=dev
+      - name: Run tests
+        run: npm test

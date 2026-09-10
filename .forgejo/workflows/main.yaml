@@ -1,0 +1,29 @@
+name: main-workflow
+on:
+  push:
+    branches:
+      - main
+    paths-ignore:
+      - 'README.md'
+      - '.gitignore'
+      - 'LICENSE'
+      - 'compose*.yaml'
+  workflow_dispatch:
+jobs:
+  tests:
+    uses: ./.forgejo/workflows/tests.yaml
+    secrets: inherit
+  version:
+    needs: tests
+    uses: ./.forgejo/workflows/version.yaml
+    secrets: inherit
+  build:
+    needs: version
+    uses: ./.forgejo/workflows/build.yaml
+    with:
+      tag: ${{ needs.version.outputs.new_tag }}
+    secrets: inherit
+  deploy:
+    needs: build
+    uses: ./.forgejo/workflows/deploy.yaml
+    secrets: inherit

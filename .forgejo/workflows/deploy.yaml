@@ -1,0 +1,17 @@
+name: deploy to dokploy
+on:
+  workflow_call:
+jobs:
+  deploy-dokploy:
+    runs-on: docker
+    steps:
+      - name: Trigger webhook
+        env:
+          WEBHOOK_URL: ${{ secrets.DOKPLOY_SB_BOT_WEBHOOK }}
+        run: |
+          if [ -z "$WEBHOOK_URL" ]; then
+            echo "Error: WEBHOOK secret is not configured."
+            exit 1
+          fi
+          echo "Sending deployment trigger to Dokploy..."
+          curl -X POST -v "$WEBHOOK_URL"

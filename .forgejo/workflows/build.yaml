@@ -1,0 +1,71 @@
+name: build docker image
+on:
+  workflow_call:
+    inputs:
+      tag:
+        required: true
+        type: string
+
+jobs:
+  build-push:
+    runs-on: linux-amd64
+    container:
+      image: quay.io/podman/stable
+      # options: --privileged --device /dev/fuse
+    steps:
+      - run: |
+          echo "prepare build environment"
+          dnf install -y node git skopeo
+
+      - uses: https://data.forgejo.org/actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.BOT_TOKEN }}
+          ref: ${{ inputs.tag }}
+
+      - name: Setup Podman Storage
+        run: |
+          echo "Clearing out conflicting storage caches..."
+          rm -rf /var/lib/containers/storage/*
+          mkdir -p /etc/containers
+          cat <<EOF > /etc/containers/storage.conf
+          [storage]
+          driver = "vfs"
+          runroot = "/run/containers/storage"
+          graphroot = "/var/lib/containers/storage"
+          EOF
+          rm -rf /var/lib/containers/storage/*
+
+      - name: Build and Push Docker Image to Zot
+        run: |
+          CLEAN_TAG="${{ inputs.tag }}"
+          REGISTRY="${{ vars.ZOT_REGISTRY }}"
+          REPO_LOWER=$(echo "${{ env.FORGEJO_REPOSITORY }}" | tr '[:upper:]' '[:lower:]')
+          IMAGE_PATH="$REGISTRY/$REPO_LOWER"
+          AUTHORS=$(git log --all --format=\"%ae\" | sort -u )
+          
+          mkdir -p /etc/containers
+          cat <<EOF > /etc/containers/registries.conf
+          [[registry]]
+          location = "$REGISTRY"
+          EOF
+          
+          echo "Initiating user-space compilation via isolated Chroot..."
+          podman --storage-driver=vfs build --isolation=chroot \
+            --label "org.opencontainers.image.source"="${{ env.FORGEJO_SERVER_URL }}/${{ env.FORGEJO_REPOSITORY }}" \
+            --label "org.opencontainers.image.revision"="$FORGEJO_SHA" \
+            --label "org.opencontainers.image.version"="${CLEAN_TAG#v}" \
+            --label "org.opencontainers.image.vendor"="${{ secrets.ZOT_USERNAME }}" \
+            --label "org.opencontainers.image.authors"="$AUTHORS" \
+            -t $IMAGE_PATH:$CLEAN_TAG -t $IMAGE_PATH:latest .
+          
+          echo "Logging into Zot via skopeo..."
+          echo "${{ secrets.ZOT_PASSWORD }}" | skopeo login --username "${{ secrets.ZOT_USERNAME }}" --password-stdin $REGISTRY
+          echo "Pushing images to Zot..."
+          skopeo copy \
+            containers-storage:$IMAGE_PATH:$CLEAN_TAG \
+            docker://$IMAGE_PATH:$CLEAN_TAG
+            
+          skopeo copy \
+            containers-storage:$IMAGE_PATH:latest \
+            docker://$IMAGE_PATH:latest

@@ -1,0 +1,11 @@
+services:
+  discord-bot:
+    image: ${DOCKER_REPOSITORY}/${IMAGE_NAME}:latest
+    container_name: starboard-discord-bot
+    pull_policy: always
+    restart: unless-stopped
+    environment:
+      - DISCORD_TOKEN=${DISCORD_TOKEN}
+      - DB_PATH=/data
+    volumes:
+      - ${BOT_DATA_PATH}:/data

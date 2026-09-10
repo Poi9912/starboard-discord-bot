@@ -1,0 +1,51 @@
+name: version
+on:
+  workflow_call:
+    outputs:
+      new_tag:
+        value: ${{ jobs.bump-version.outputs.computed_tag }}
+jobs:
+  bump-version:
+    runs-on: docker
+    container:
+      image: alpine:latest
+    outputs:
+      computed_tag: ${{ steps.create_tag.outputs.NEW_TAG }}
+    steps:
+      - run: apk add --no-cache git jq nodejs npm
+      - uses: https://data.forgejo.org/actions/checkout@v4
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.BOT_TOKEN }}
+      - name: Next tag
+        id: create_tag
+        run: |
+          git fetch --tags --force
+          LATEST_TAG=$(git tag -l "v*.*.*" | sort -V | tail -n1)
+          if [ -z "$LATEST_TAG" ]; then
+            LATEST_TAG="v0.0.0"
+          fi
+          echo "Current latest tag: $LATEST_TAG"
+          VERSION=${LATEST_TAG#v}
+          MAJOR=$(echo $VERSION | cut -d. -f1)
+          MINOR=$(echo $VERSION | cut -d. -f2)
+          PATCH=$(echo $VERSION | cut -d. -f3)
+          NEW_PATCH=$((PATCH + 1))
+          NEW_TAG="v$MAJOR.$MINOR.$NEW_PATCH"
+          echo "New tag: $NEW_TAG"
+          echo "Updating package.json to match ${NEW_TAG#v}..."
+          jq ".version = \"${NEW_TAG#v}\"" package.json > tmp.json && mv tmp.json package.json
+          jq ".version = \"${NEW_TAG#v}\"" package-lock.json > tmp.json && mv tmp.json package-lock.json
+          git diff package.json
+          git diff package-lock.json
+          git config user.name "${{ secrets.BOT_USERNAME}}"
+          git config user.email "${{ secrets.BOT_EMAIL}}"
+          echo "Committing package.json and package-lock.json updates..."
+          git add package.json package-lock.json
+          git commit -m "chore: bump version to $NEW_TAG [skip ci]"
+          echo "Will tag the latest commit with: $NEW_TAG"
+          git tag $NEW_TAG
+          echo "Pushing commit and tag to origin..."
+          git push origin HEAD:${{ github.ref_name }} $NEW_TAG
+          echo "NEW_TAG=$NEW_TAG" >> $FORGEJO_OUTPUT
+          echo "Successfully bumped to $NEW_TAG"

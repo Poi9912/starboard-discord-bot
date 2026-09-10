@@ -19,7 +19,6 @@ function createStarboardEmbed(message, emoji, count) {
   const jumpLink = `→ [original message](${message.url}) in <#${message.channelId}>`;
   const reactionHeader = `${count} ${emoji}`;
 
-  // Place reaction counter and custom emoji below the message content/jump link
   if (message.content && message.content.trim().length > 0) {
     embed.setDescription(`${message.content}\n\n${jumpLink}\n${reactionHeader}`);
   } else {
@@ -42,8 +41,7 @@ function createStarboardEmbed(message, emoji, count) {
       contentTypeLabel = 'Attachment';
     }
   }
-
-  // Footer only contains the content type label
+  
   embed.setFooter({ text: contentTypeLabel });
 
   return embed;

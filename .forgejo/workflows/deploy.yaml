@@ -18,6 +18,6 @@ jobs:
             echo "Error: WEBHOOK secret is not configured."
             exit 1
           fi
-          echo "Sending deployment trigger to Dokploy..."
+          echo "Sending deployment trigger to provider..."
           curl -X POST "$WEBHOOK_URL" \
             -H "X-Gitlab-Token: $WEBHOOK_SECRET"

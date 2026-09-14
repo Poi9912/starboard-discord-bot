@@ -20,4 +20,4 @@ jobs:
           fi
           echo "Sending deployment trigger to Dokploy..."
           curl -X POST "$WEBHOOK_URL" \
-            -H "X-Gitlab-Token: WEBHOOK_SECRET"
+            -H "X-Gitlab-Token: $WEBHOOK_SECRET"
